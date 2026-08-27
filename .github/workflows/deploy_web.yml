@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -25,6 +25,13 @@ jobs:
           flutter-version: '3.44.1'
           channel: 'stable'
           cache: true
+
+      - name: Web platformu eksikse oluştur
+        run: |
+          if [ ! -d "web" ]; then
+            flutter create --platforms=web --org com.minikkasif --project-name minik_kasif /tmp/scaffold_web
+            cp -r /tmp/scaffold_web/web .
+          fi
 
       - name: Bağımlılıkları kur
         run: flutter pub get
