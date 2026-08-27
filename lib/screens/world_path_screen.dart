@@ -95,7 +95,13 @@ class WorldPathScreen extends StatelessWidget {
                     : null,
                 color: unlocked ? null : AppColors.lockGrey,
                 boxShadow: [
-                  BoxShadow(color: AppColors.cardShadow, offset: const Offset(0, 5), blurRadius: 0),
+                  BoxShadow(
+                    color: unlocked ? world.gradient[1].withOpacity(0.5) : AppColors.cardShadow,
+                    offset: const Offset(0, 6),
+                    blurRadius: 14,
+                    spreadRadius: -3,
+                  ),
+                  const BoxShadow(color: AppColors.cardShadow, offset: Offset(0, 2), blurRadius: 3),
                 ],
                 border: Border.all(color: Colors.white, width: 4),
               ),

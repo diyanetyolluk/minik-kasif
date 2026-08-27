@@ -6,6 +6,9 @@ import '../services/audio_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/mascot.dart';
 import '../widgets/star_row.dart';
+import '../widgets/glossy_card.dart';
+import '../widgets/bouncy_tap.dart';
+import '../widgets/fade_slide_in.dart';
 import 'world_path_screen.dart';
 import 'parent_gate_screen.dart';
 import 'sticker_album_screen.dart';
@@ -31,15 +34,18 @@ class HomeScreen extends StatelessWidget {
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                         children: [
-                          const SizedBox(height: 4),
-                          const PatiMascot(size: 120, mood: MascotMood.happy),
+                          const SizedBox(height: 8),
+                          const _MascotSpotlight(),
                           const SizedBox(height: 6),
                           Text(S.appName, style: AppText.display, textAlign: TextAlign.center),
                           const SizedBox(height: 4),
                           Text(S.tagline, style: AppText.body, textAlign: TextAlign.center),
                           const SizedBox(height: 24),
-                          for (final w in worlds) ...[
-                            _WorldCard(world: w),
+                          for (int i = 0; i < worlds.length; i++) ...[
+                            FadeSlideIn(
+                              index: i,
+                              child: _WorldCard(world: worlds[i]),
+                            ),
                             const SizedBox(height: 16),
                           ],
                           const SizedBox(height: 8),
@@ -69,6 +75,35 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+/// Maskotun arkasında yumuşak, renkli bir "spotlight" halesi — sahne
+/// ışığı altındaymış gibi bir premium his katar.
+class _MascotSpotlight extends StatelessWidget {
+  const _MascotSpotlight();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 140,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 190,
+            height: 190,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [AppColors.sun.withOpacity(0.28), AppColors.sun.withOpacity(0.0)],
+              ),
+            ),
+          ),
+          const PatiMascot(size: 120, mood: MascotMood.happy),
+        ],
+      ),
+    );
+  }
+}
+
 class _TopBar extends StatelessWidget {
   final int totalStars;
   const _TopBar({required this.totalStars});
@@ -79,46 +114,42 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
       child: Row(
         children: [
-          _pill(
+          BouncyTap(onTap: () {}, child: _pill(
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.star_rounded, color: AppColors.gold, size: 22),
               const SizedBox(width: 4),
               Text('$totalStars', style: AppText.h2),
             ]),
-            onTap: () {},
-          ),
+          )),
           const SizedBox(width: 10),
-          _pill(
-            child: const Icon(Icons.auto_awesome_rounded, color: AppColors.berry, size: 22),
+          BouncyTap(
             onTap: () {
               AudioService.instance.button();
               Navigator.push(context, MaterialPageRoute(builder: (_) => const StickerAlbumScreen()));
             },
+            child: _pill(child: const Icon(Icons.auto_awesome_rounded, color: AppColors.berry, size: 22)),
           ),
           const Spacer(),
-          _pill(
-            child: Text(AppLang.isTr ? 'EN' : 'TR', style: AppText.h2),
+          BouncyTap(
             onTap: () {
               AudioService.instance.button();
               AppLang.toggle();
               ProgressService.instance.setLang(AppLang.code.value);
             },
+            child: _pill(child: Text(AppLang.isTr ? 'EN' : 'TR', style: AppText.h2)),
           ),
         ],
       ),
     );
   }
 
-  Widget _pill({required Widget child, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 46,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: playfulCard(color: Colors.white, radius: 16, shadowOffset: const Offset(0, 4)),
-        alignment: Alignment.center,
-        child: child,
-      ),
+  Widget _pill({required Widget child}) {
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: playfulCard(color: Colors.white, radius: 16, shadowOffset: const Offset(0, 4)),
+      alignment: Alignment.center,
+      child: child,
     );
   }
 }
@@ -135,21 +166,21 @@ class _WorldCard extends StatelessWidget {
     }
     final maxStars = world.levelCount * 3;
 
-    return GestureDetector(
+    return BouncyTap(
       onTap: () {
         AudioService.instance.whoosh();
         Navigator.push(context, MaterialPageRoute(builder: (_) => WorldPathScreen(world: world)));
       },
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: gradientCard(colors: world.gradient),
+      child: GlossyCard(
+        colors: world.gradient,
         child: Row(
           children: [
             Container(
               width: 64, height: 64,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.25),
+                color: Colors.white.withOpacity(0.28),
                 borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
               ),
               child: Icon(world.icon, color: Colors.white, size: 34),
             ),
@@ -158,16 +189,16 @@ class _WorldCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(world.title(), style: AppText.h1.copyWith(color: Colors.white)),
+                  Text(world.title(), style: AppText.onGradientTitle),
                   const SizedBox(height: 2),
-                  Text(world.subtitle(), style: AppText.body.copyWith(color: Colors.white.withOpacity(0.9))),
+                  Text(world.subtitle(), style: AppText.onGradientBody.copyWith(color: Colors.white.withOpacity(0.92))),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Icon(Icons.star_rounded, color: Colors.white.withOpacity(0.9), size: 16),
                       const SizedBox(width: 4),
                       Text('$stars / $maxStars',
-                          style: AppText.body.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+                          style: AppText.onGradientBody.copyWith(fontSize: 14)),
                     ],
                   ),
                 ],
