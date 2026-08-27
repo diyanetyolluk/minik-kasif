@@ -1,0 +1,41 @@
+name: Android APK derle
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.1'
+          channel: 'stable'
+          cache: true
+
+      - name: Android native proje eksikse oluştur
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create --platforms=android --org com.minikkasif --project-name minik_kasif /tmp/scaffold
+            cp -r /tmp/scaffold/android .
+            sed -i 's/android:label="minik_kasif"/android:label="Minik Kâşif"/' android/app/src/main/AndroidManifest.xml || true
+          fi
+
+      - name: Bağımlılıkları kur
+        run: flutter pub get
+
+      - name: Analiz (bilgilendirme amaçlı, akışı durdurmaz)
+        run: flutter analyze || true
+
+      - name: APK derle
+        run: flutter build apk --release
+
+      - name: APK'yı yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: minik-kasif-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
